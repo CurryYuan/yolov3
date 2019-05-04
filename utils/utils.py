@@ -3,12 +3,14 @@ import random
 
 import cv2
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
 
 from utils import torch_utils
+from utils.focalloss import *
 
 matplotlib.rc('font', **{'size': 12})
 
@@ -259,6 +261,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     # Define criteria
     MSE = nn.MSELoss()
     CE = nn.CrossEntropyLoss()  # (weight=model.class_weights)
+    FL = FocalLoss(gamma=2,alpha=0.25)
     BCE = nn.BCEWithLogitsLoss()
 
     # Compute losses
@@ -277,7 +280,10 @@ def compute_loss(p, targets, model):  # predictions, targets, model
 
             lxy += (k * h['xy']) * MSE(torch.sigmoid(pi[..., 0:2]), txy[i])  # xy loss
             lwh += (k * h['wh']) * MSE(pi[..., 2:4], twh[i])  # wh yolo loss
-            lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            # CE
+            # lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
+            # FL
+            lcls += (k * h['cls']) * FL(pi[..., 5:], tcls[i])
 
         # pos_weight = ft([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)

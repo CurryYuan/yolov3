@@ -7,6 +7,7 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 def test(
         cfg,

@@ -10,6 +10,8 @@ from models import *
 from utils.datasets import *
 from utils.utils import *
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
 # Hyperparameters
 # 0.861      0.956      0.936      0.897       1.51      10.39     0.1367    0.01057    0.01181     0.8409     0.1287   0.001028     -3.441     0.9127  0.0004841
 hyp = {'k': 10.39,  # loss multiple
@@ -80,7 +82,7 @@ def train(
     nf = int(model.module_defs[model.yolo_layers[0] - 1]['filters'])  # yolo layer size (i.e. 255)
     if resume:  # Load previously saved model
         if transfer:  # Transfer learning
-            chkpt = torch.load(weights + 'yolov3-spp.pt', map_location=device)
+            chkpt = torch.load(weights + 'yolov3.pt', map_location=device)
             model.load_state_dict({k: v for k, v in chkpt['model'].items() if v.numel() > 1 and v.shape[0] != 255},
                                   strict=False)
             for p in model.parameters():
@@ -154,6 +156,7 @@ def train(
     n_burnin = min(round(nb / 5 + 1), 1000)  # burn-in batches
     os.remove('train_batch0.jpg') if os.path.exists('train_batch0.jpg') else None
     os.remove('test_batch0.jpg') if os.path.exists('test_batch0.jpg') else None
+    os.remove('result.txt') if os.path.exists('result.txt') else None
     for epoch in range(start_epoch, epochs):
         model.train()
         print(('\n%8s%12s' + '%10s' * 7) % ('Epoch', 'Batch', 'xy', 'wh', 'conf', 'cls', 'total', 'nTargets', 'time'))
@@ -252,7 +255,7 @@ def train(
                 torch.save(chkpt, best)
 
             # Save backup every 10 epochs (optional)
-            if epoch > 0 and epoch % 10 == 0:
+            if epoch > 0 and epoch % 50 == 0:
                 torch.save(chkpt, weights + 'backup%g.pt' % epoch)
 
             # Delete checkpoint
@@ -312,6 +315,8 @@ if __name__ == '__main__':
         accumulate=opt.accumulate,
         multi_scale=opt.multi_scale,
     )
+    # plot result
+    plot_results()
 
     # Evolve hyperparameters (optional)
     if opt.evolve:

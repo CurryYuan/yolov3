@@ -284,6 +284,7 @@ def compute_loss(p, targets, model):  # predictions, targets, model
             # lcls += (k * h['cls']) * CE(pi[..., 5:], tcls[i])  # class_conf loss
             # FL
             lcls += (k * h['cls']) * FL(pi[..., 5:], tcls[i])
+            # print(lcls)
 
         # pos_weight = ft([gp[i] / min(gp) * 4.])
         # BCE = nn.BCEWithLogitsLoss(pos_weight=pos_weight)

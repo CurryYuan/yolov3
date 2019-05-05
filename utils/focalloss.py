@@ -33,8 +33,8 @@ class FocalLoss(nn.Module):
         alpha=self.alpha
         gamma=self.gamma
 
-        t = one_hot_embedding(y.data.cpu(), 1+self.num_classes)  # [N,21]
-        t = t[:,1:]  # exclude background
+        t = one_hot_embedding(y.data.cpu(), self.num_classes)  # [N,21]
+        # t = t[:,1:]  # exclude background
         t = Variable(t).cuda()  # [N,20]
 
         p = x.sigmoid()
